@@ -1,0 +1,128 @@
+{
+  "新竹市": {
+    "東區_鄭正鈐": {
+      "agree_votes": 40834,
+      "disagree_votes": 57593,
+      "valid_votes": 98427,
+      "agree_rate": 41.47,
+      "disagree_rate": 58.53,
+      "turnout_rate": 59.35,
+      "legislator": "鄭正鈐",
+      "region": "東區"
+    },
+    "東區_高虹安": {
+      "agree_votes": 38881,
+      "disagree_votes": 60038,
+      "valid_votes": 98919,
+      "agree_rate": 39.32,
+      "disagree_rate": 60.68,
+      "turnout_rate": 59.26,
+      "mayor": "高虹安",
+      "region": "東區"
+    },
+    "北區_鄭正鈐": {
+      "agree_votes": 32191,
+      "disagree_votes": 41181,
+      "valid_votes": 73372,
+      "agree_rate": 43.87,
+      "disagree_rate": 56.13,
+      "turnout_rate": 59.27,
+      "legislator": "鄭正鈐",
+      "region": "北區"
+    },
+    "北區_高虹安": {
+      "agree_votes": 30926,
+      "disagree_votes": 42957,
+      "valid_votes": 73883,
+      "agree_rate": 41.86,
+      "disagree_rate": 58.14,
+      "turnout_rate": 59.08,
+      "mayor": "高虹安",
+      "region": "北區"
+    },
+    "香山區_鄭正鈐": {
+      "agree_votes": 16945,
+      "disagree_votes": 20531,
+      "valid_votes": 37476,
+      "agree_rate": 45.20,
+      "disagree_rate": 54.80,
+      "turnout_rate": 57.60,
+      "legislator": "鄭正鈐",
+      "region": "香山區"
+    },
+    "香山區_高虹安": {
+      "agree_votes": 16484,
+      "disagree_votes": 21365,
+      "valid_votes": 37849,
+      "agree_rate": 43.55,
+      "disagree_rate": 56.45,
+      "turnout_rate": 57.34,
+      "mayor": "高虹安",
+      "region": "香山區"
+    }
+  },
+  "桃园市": {
+    "桃園區_牛煦庭": {
+      "agree_votes": 16956,
+      "disagree_votes": 22927,
+      "valid_votes": 39883,
+      "agree_rate": 42.51,
+      "disagree_rate": 57.49,
+      "turnout_rate": 55.18,
+      "legislator": "牛煦庭",
+      "region": "桃園區"
+    },
+    "桃園區_萬美玲": {
+      "agree_votes": 72626,
+      "disagree_votes": 97544,
+      "valid_votes": 170170,
+      "agree_rate": 42.69,
+      "disagree_rate": 57.31,
+      "turnout_rate": 55.76,
+      "legislator": "萬美玲",
+      "region": "桃園區"
+    },
+    "中壢區_魯明哲": {
+      "agree_votes": 66301,
+      "disagree_votes": 105323,
+      "valid_votes": 171624,
+      "agree_rate": 38.63,
+      "disagree_rate": 61.37,
+      "turnout_rate": 55.79,
+      "legislator": "魯明哲",
+      "region": "中壢區"
+    },
+    "中壢區_邱若華": {
+      "agree_votes": 6604,
+      "disagree_votes": 15298,
+      "valid_votes": 21902,
+      "agree_rate": 30.15,
+      "disagree_rate": 69.85,
+      "turnout_rate": 55.76,
+      "legislator": "邱若華",
+      "region": "中壢區"
+    }
+  },
+  "台北市": {
+    "松山區_王鴻薇": {
+      "agree_votes": 25138,
+      "disagree_votes": 33053,
+      "valid_votes": 58191,
+      "agree_rate": 43.20,
+      "disagree_rate": 56.80,
+      "turnout_rate": 61.79,
+      "legislator": "王鴻薇",
+      "region": "松山區"
+    },
+    "松山區_徐巧芯": {
+      "agree_votes": 16870,
+      "disagree_votes": 18049,
+      "valid_votes": 34919,
+      "agree_rate": 48.31,
+      "disagree_rate": 51.69,
+      "turnout_rate": 59.60,
+      "legislator": "徐巧芯",
+      "region": "松山區"
+    }
+  }
+} 
