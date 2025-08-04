@@ -1,0 +1,1614 @@
+/* ===== 基础样式重置 ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ===== 党派颜色主题 ===== */
+:root {
+    /* 国民党 - 蓝色系 */
+    --kmt-color-1: #E6F3FF;
+    --kmt-color-2: #CCE7FF;
+    --kmt-color-3: #99D5FF;
+    --kmt-color-4: #66C2FF;
+    --kmt-color-5: #3399FF;
+    --kmt-color-6: #0052CC;
+    --kmt-primary: #0052CC;
+    
+    /* 民进党 - 绿色系 */
+    --dpp-color-1: #E6FFE6;
+    --dpp-color-2: #CCFFCC;
+    --dpp-color-3: #99FF99;
+    --dpp-color-4: #66FF66;
+    --dpp-color-5: #33CC33;
+    --dpp-color-6: #006600;
+    --dpp-primary: #006600;
+    
+    /* 民众党 - 青绿色系 */
+    --tpp-color-1: #E6FFFF;
+    --tpp-color-2: #CCFFFF;
+    --tpp-color-3: #99FFFF;
+    --tpp-color-4: #66FFFF;
+    --tpp-color-5: #33CCCC;
+    --tpp-color-6: #006666;
+    --tpp-primary: #006666;
+    
+    /* 获胜党派 - 金色系 */
+    --winner-color-1: #FFF8E1;
+    --winner-color-2: #FFECB3;
+    --winner-color-3: #FFE082;
+    --winner-color-4: #FFD54F;
+    --winner-color-5: #FFC107;
+    --winner-color-6: #FF8F00;
+    --winner-primary: #FF8F00;
+    
+    /* 大罢免 - 红色系 */
+    --recall-color-1: #FFEBEE;
+    --recall-color-2: #FFCDD2;
+    --recall-color-3: #EF9A9A;
+    --recall-color-4: #E57373;
+    --recall-color-5: #F44336;
+    --recall-color-6: #D32F2F;
+    --recall-primary: #D32F2F;
+    
+    /* 中性色彩 */
+    --bg-color: #f8f9fa;
+    --border-color: #e9ecef;
+    --text-color: #495057;
+    --shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* ===== 页面标题栏 ===== */
+.header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: var(--shadow);
+    margin-bottom: 0;
+    color: white;
+    padding: 25px 0;
+}
+
+.title {
+    font-size: 2.8rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 12px;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.subtitle {
+    text-align: center;
+    color: rgba(255,255,255,0.9);
+    font-size: 1.2rem;
+    margin-bottom: 25px;
+    font-weight: 300;
+}
+
+.election-info {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255,255,255,0.1);
+    padding: 15px 20px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.info-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    font-size: 1.3rem;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+/* ===== 党派选择控制栏 ===== */
+.controls {
+    background: white;
+    border-bottom: 3px solid var(--border-color);
+    padding: 20px 0;
+    margin-bottom: 30px;
+}
+
+.party-selector h3 {
+    margin-bottom: 15px;
+    color: var(--text-color);
+    font-size: 1.2rem;
+}
+
+.party-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.party-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border: 2px solid transparent;
+    border-radius: 25px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.party-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.party-btn.active {
+    border-color: currentColor;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.party-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.kmt-color { background: var(--kmt-primary); }
+.dpp-color { background: var(--dpp-primary); }
+.tpp-color { background: var(--tpp-primary); }
+.winner-color { background: var(--winner-primary); }
+.recall-color { background: var(--recall-primary); }
+
+.party-btn[data-party="kmt"] { color: var(--kmt-primary); }
+.party-btn[data-party="dpp"] { color: var(--dpp-primary); }
+.party-btn[data-party="tpp"] { color: var(--tpp-primary); }
+.party-btn[data-party="winner"] { color: var(--winner-primary); }
+.party-btn[data-party="recall"] { color: var(--recall-primary); }
+
+/* ===== 获胜党派模式切换控制 ===== */
+.winner-mode-controls {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.winner-mode-controls h4 {
+    margin-bottom: 10px;
+    color: var(--text-color);
+    font-size: 1rem;
+    text-align: center;
+}
+
+.mode-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.winner-mode-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    border: 2px solid transparent;
+    border-radius: 20px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    color: var(--winner-primary);
+}
+
+.winner-mode-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.winner-mode-btn.active {
+    border-color: var(--winner-primary);
+    background: var(--winner-primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255,143,0,0.3);
+}
+
+.mode-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.7;
+}
+
+.party-btn small {
+    display: block;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+/* ===== 主要内容区域 ===== */
+.main-content {
+    padding: 0 0 40px 0;
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+/* ===== 地图区域 ===== */
+.map-section {
+    background: white;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+
+
+
+
+.map-container {
+    position: relative;
+    min-height: 700px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+#taiwan-map {
+    width: 100%;
+    height: 600px;
+    display: block;
+    flex-shrink: 0;
+}
+
+/* 地图区域样式 */
+.region {
+    stroke: #fff;
+    stroke-width: 1.5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.region:hover {
+    stroke: #333;
+    stroke-width: 2;
+    filter: brightness(0.9);
+}
+
+/* 地图图例 */
+.map-legend {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    background: rgba(255,255,255,0.95);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    min-width: 300px;
+}
+
+.map-legend h4 {
+    margin-bottom: 10px;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.legend-gradient {
+    position: relative;
+}
+
+.legend-bar {
+    height: 25px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    background: linear-gradient(to right, 
+        var(--kmt-color-1), 
+        var(--kmt-color-3), 
+        var(--kmt-color-5), 
+        var(--kmt-color-6)
+    );
+}
+
+.legend-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-color);
+}
+
+
+
+/* ===== 数据面板 ===== */
+.data-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.panel-section {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+}
+
+.panel-section h3 {
+    margin-bottom: 15px;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+/* 全台统计 */
+.overall-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.stat-value {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #2c3e50;
+}
+
+/* 排行榜 */
+.ranking-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.ranking-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+}
+
+.ranking-item:hover {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.ranking-number {
+    width: 25px;
+    height: 25px;
+    background: var(--border-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+}
+
+.ranking-number.top-3 {
+    background: linear-gradient(45deg, #f39c12, #e74c3c);
+}
+
+.ranking-region {
+    flex: 1;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.ranking-percentage {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* 县市详情 */
+.region-detail {
+    min-height: 120px;
+}
+
+.detail-placeholder {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+.detail-content {
+    animation: fadeIn 0.3s ease;
+    max-width: 280px;
+    padding: 12px;
+}
+
+.detail-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+
+.detail-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.detail-stat {
+    text-align: center;
+    padding: 8px;
+    background: var(--bg-color);
+    border-radius: 5px;
+}
+
+.detail-stat-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.detail-stat-label {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+/* 分析图表 */
+.analysis-chart {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-style: italic;
+}
+
+/* ===== 工具提示 ===== */
+.tooltip {
+    position: absolute;
+    background: rgba(0,0,0,0.9);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 1000;
+    max-width: 250px;
+    line-height: 1.4;
+}
+
+.tooltip.show {
+    opacity: 1;
+}
+
+/* ===== 页面底部 ===== */
+.footer {
+    background: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 40px;
+}
+
+.footer p {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* ===== 动画效果 ===== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.animate-in {
+    animation: slideIn 0.5s ease forwards;
+}
+
+/* ===== 响应式设计 ===== */
+@media (max-width: 1200px) {
+    .content-grid {
+        grid-template-columns: 1.5fr 1fr;
+        gap: 20px;
+    }
+    
+    .map-container {
+        height: 600px;
+    }
+}
+
+@media (max-width: 968px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .map-container {
+        height: 500px;
+    }
+    
+    .party-buttons {
+        justify-content: center;
+    }
+    
+    .party-btn {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .title {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    .header {
+        padding: 20px 0;
+    }
+    
+    .title {
+        font-size: 2.2rem;
+    }
+    
+    .subtitle {
+        font-size: 1rem;
+    }
+    
+    .election-info {
+        gap: 20px;
+    }
+    
+    .info-item {
+        padding: 12px 16px;
+    }
+    
+    .info-value {
+        font-size: 1.1rem;
+    }
+    
+    .map-container {
+        height: 400px;
+        padding: 15px;
+    }
+    
+    .party-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .party-btn {
+        width: 200px;
+        justify-content: center;
+    }
+    
+    .winner-mode-controls {
+        margin-top: 10px;
+        padding: 10px;
+    }
+    
+    .mode-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .winner-mode-btn {
+        width: 150px;
+        justify-content: center;
+    }
+    
+    .overall-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .detail-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .map-container {
+        height: 350px;
+        padding: 10px;
+    }
+    
+    .panel-section {
+        padding: 15px;
+    }
+    
+    .map-legend {
+        bottom: 15px;
+        left: 15px;
+        padding: 10px;
+        min-width: 150px;
+    }
+    
+    .title {
+        font-size: 1.5rem;
+    }
+    
+    .subtitle {
+        font-size: 1rem;
+    }
+}
+
+/* ===== 打印样式 ===== */
+@media print {
+    body {
+        background: white;
+    }
+    
+    .controls, .footer {
+        display: none;
+    }
+    
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .map-container {
+        height: 500px;
+        break-inside: avoid;
+    }
+    
+    .panel-section {
+        break-inside: avoid;
+        margin-bottom: 20px;
+    }
+} 
+
+/* ===== 地图控制按钮样式 ===== */
+.map-controls {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.map-zoom-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    z-index: 30;
+}
+
+.map-zoom-controls button {
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 30px;
+    text-align: center;
+    background-color: #ffffff;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.2s;
+}
+
+.map-zoom-controls button:hover {
+    background-color: #f0f0f0;
+}
+
+/* 地图导航控制 */
+.map-controls {
+    position: relative;
+    z-index: 20;
+}
+
+.map-navigation {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(255,255,255,0.95);
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.back-btn {
+    background: var(--kmt-primary);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.back-btn:hover {
+    background: #003d99;
+    transform: translateY(-1px);
+}
+
+.current-region {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+/* 加载指示器 */
+.loading-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255,255,255,0.95);
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--kmt-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-indicator span {
+    color: var(--text-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.map-navigation {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 200px;
+}
+
+.back-btn {
+    background: var(--kmt-primary);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.back-btn:hover {
+    background: #003d7a;
+}
+
+.current-region {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* ===== 立委选择界面样式 ===== */
+.legislator-selector {
+    margin-top: 20px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.legislator-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.legislator-item {
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #fafafa;
+}
+
+.legislator-item:hover {
+    border-color: #D32F2F;
+    background: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.15);
+}
+
+.legislator-item.active {
+    border-color: #D32F2F;
+    background: #FFEBEE;
+    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.2);
+}
+
+.legislator-header {
+    margin-bottom: 10px;
+}
+
+.legislator-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.legislator-party {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.legislator-stats {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.legislator-stats .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.legislator-stats .stat-label {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.legislator-stats .stat-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* ===== 总体情况面板样式 ===== */
+.overall-recall-panel {
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.overall-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.overall-stat-item {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.overall-stat-item:hover {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.overall-stat-item .stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.overall-stat-item .stat-label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* ===== 响应式设计 ===== */
+@media (max-width: 768px) {
+    .legislator-stats {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .overall-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .legislator-item {
+        padding: 12px;
+    }
+    
+    .overall-recall-panel,
+    .legislator-selector {
+        padding: 15px;
+    }
+}
+
+/* ===== 立委选择下拉菜单样式 ===== */
+.legislator-selector-control {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    z-index: 10;
+}
+
+.legislator-dropdown {
+    padding: 8px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.legislator-dropdown:hover {
+    border-color: #D32F2F;
+    box-shadow: 0 2px 8px rgba(211, 47, 47, 0.15);
+}
+
+.legislator-dropdown:focus {
+    outline: none;
+    border-color: #D32F2F;
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+}
+
+.legislator-dropdown option {
+    padding: 8px;
+    background: #fff;
+    color: #333;
+}
+
+/* ===== 立委详细数据面板样式 ===== */
+.legislator-detail-panel {
+    margin-top: 20px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border: 2px solid #D32F2F;
+}
+
+.legislator-detail-panel h4 {
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-bottom: 2px solid #D32F2F;
+    padding-bottom: 8px;
+}
+
+.legislator-detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.legislator-detail-header {
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* 国民党立委样式 */
+.legislator-detail-header.kmt {
+    background: linear-gradient(135deg, #1976D2, #0D47A1);
+    box-shadow: 0 4px 15px rgba(25, 118, 210, 0.3);
+}
+
+/* 民进党立委样式 */
+.legislator-detail-header.dpp {
+    background: linear-gradient(135deg, #D32F2F, #B71C1C);
+    box-shadow: 0 4px 15px rgba(211, 47, 47, 0.3);
+}
+
+/* 民众党立委样式 */
+.legislator-detail-header.tpp {
+    background: linear-gradient(135deg, #00BCD4, #006064);
+    box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);
+}
+
+/* 其他党派默认样式 */
+.legislator-detail-header.default {
+    background: linear-gradient(135deg, #9E9E9E, #616161);
+    box-shadow: 0 4px 15px rgba(158, 158, 158, 0.3);
+}
+
+.legislator-detail-header .legislator-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    color: white;
+}
+
+.legislator-detail-header .legislator-party {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    opacity: 0.9;
+    color: white;
+}
+
+.legislator-detail-header .legislator-district {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    font-weight: 500;
+    color: white;
+}
+
+.legislator-detail-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.legislator-detail-item {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.legislator-detail-item .label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.legislator-detail-item .value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+
+.legislator-detail-item .agree-rate .value {
+    color: #D32F2F;
+}
+
+.legislator-detail-item .turnout-rate .value {
+    color: #1976D2;
+}
+
+.legislator-detail-item .total-votes .value {
+    color: #388E3C;
+}
+
+.legislator-detail-item .agree-votes .value {
+    color: #D32F2F;
+}
+
+.legislator-detail-item .disagree-votes .value {
+    color: #F57C00;
+}
+
+/* ===== 响应式设计 ===== */
+@media (max-width: 768px) {
+    .legislator-selector-control {
+        margin-left: 10px;
+    }
+    
+    .legislator-dropdown {
+        min-width: 150px;
+        font-size: 0.8rem;
+    }
+    
+    .legislator-detail-content {
+        gap: 15px;
+    }
+    
+    .legislator-detail-stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .legislator-detail-panel {
+        padding: 15px;
+    }
+    
+    .legislator-detail-header {
+        padding: 15px;
+    }
+    
+    .legislator-detail-header .legislator-name {
+        font-size: 1.3rem;
+        color: white;
+    }
+    
+    .legislator-detail-header .legislator-party {
+        font-size: 1rem;
+        color: white;
+    }
+    
+    .legislator-detail-header .legislator-district {
+        color: white;
+    }
+}
+
+@media (max-width: 480px) {
+    .overall-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .legislator-stats {
+        flex-direction: row;
+        justify-content: space-around;
+    }
+    
+    .legislator-dropdown {
+        min-width: 120px;
+        font-size: 0.75rem;
+    }
+    
+    .legislator-detail-panel {
+        padding: 12px;
+    }
+    
+    .legislator-detail-item {
+        padding: 12px;
+    }
+}
+
+
+
+/* ===== 地图控制区域样式 ===== */
+.map-controls-overlay {
+    position: absolute;
+    top: 520px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.map-controls-overlay .map-legend {
+    position: static;
+    background: rgba(255,255,255,0.95);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    min-width: 300px;
+    pointer-events: auto;
+}
+
+.map-controls-overlay .map-legend h4 {
+    margin-bottom: 10px;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.map-controls-overlay .legend-gradient {
+    position: relative;
+}
+
+.map-controls-overlay .legend-bar {
+    height: 25px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    background: linear-gradient(to right, 
+        var(--kmt-color-1), 
+        var(--kmt-color-3), 
+        var(--kmt-color-5), 
+        var(--kmt-color-6)
+    );
+}
+
+.map-controls-overlay .legend-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-color);
+}
+
+/* ===== 返回地区地图按钮样式 ===== */
+.back-to-region-btn {
+    position: static;
+    z-index: 15;
+    pointer-events: auto;
+}
+
+.region-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #D32F2F, #B71C1C);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+}
+
+.region-back-btn:hover {
+    background: linear-gradient(135deg, #B71C1C, #8E0000);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(211, 47, 47, 0.4);
+}
+
+.region-back-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+}
+
+.btn-icon {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.btn-text {
+    white-space: nowrap;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .back-to-region-btn {
+        bottom: 15px;
+        right: 15px;
+    }
+    
+    .region-back-btn {
+        padding: 10px 14px;
+        font-size: 0.8rem;
+    }
+    
+    .btn-text {
+        display: none;
+    }
+    
+    .btn-icon {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .map-controls-overlay {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .map-controls-overlay .map-legend {
+        min-width: auto;
+        text-align: center;
+    }
+    
+    .back-to-region-btn {
+        align-self: flex-end;
+    }
+}
+
+@media (max-width: 480px) {
+    .map-controls-overlay {
+        top: 510px;
+        left: 10px;
+        right: 10px;
+    }
+    
+    .map-controls-overlay .map-legend {
+        padding: 12px;
+    }
+    
+    .region-back-btn {
+        padding: 8px 12px;
+        border-radius: 6px;
+    }
+}
+
+/* ===== 重叠区域样式 ===== */
+.overlapping-legislators {
+    margin-top: 15px;
+}
+
+.legislator-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.legislator-item:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.legislator-item .legislator-name {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.legislator-item .legislator-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.legislator-item .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.legislator-item .stat-label {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.legislator-item .stat-value {
+    color: #495057;
+    font-weight: 600;
+}
+
+.detail-subtitle {
+    color: #6c757d;
+    font-size: 12px;
+    margin-bottom: 10px;
+    font-style: italic;
+}
+
+/* ===== 单个立委信息样式 ===== */
+.single-legislator-info {
+    margin-top: 10px;
+}
+
+.single-legislator-info .legislator-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.single-legislator-info .legislator-name {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+.single-legislator-info .legislator-party {
+    color: #6c757d;
+    font-size: 12px;
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.single-legislator-info .legislator-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.single-legislator-info .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    padding: 4px 0;
+}
+
+.single-legislator-info .stat-label {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.single-legislator-info .stat-value {
+    color: #495057;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .legislator-item {
+        padding: 10px;
+    }
+    
+    .legislator-item .legislator-name {
+        font-size: 13px;
+    }
+    
+    .legislator-item .stat-item {
+        font-size: 11px;
+    }
+}
+
+/* ===== 仇恨值排行榜样式 ===== */
+.ranking-item.selected-legislator {
+    background: linear-gradient(135deg, #FF5722 0%, #FF7043 100%);
+    color: white;
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3);
+    border: 2px solid #FF5722;
+}
+
+.ranking-item.selected-legislator .ranking-number {
+    background: #FF5722;
+    color: white;
+}
+
+.ranking-item.selected-legislator .ranking-percentage {
+    color: white !important;
+    font-weight: 700;
+}
+
+.ranking-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    margin: 0 10px;
+}
+
+.ranking-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: inherit;
+}
+
+.ranking-district {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 2px;
+}
+
+.selected-legislator .ranking-district {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.selected-indicator {
+    font-size: 16px;
+    margin-left: 8px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* 仇恨值排行榜悬停效果 */
+.ranking-item:hover {
+    background: linear-gradient(135deg, #FF7043 0%, #FF8A65 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 87, 34, 0.4);
+}
+
+.ranking-item:hover .ranking-percentage {
+    color: white !important;
+}
+
+.ranking-item:hover .ranking-district {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+@media (max-width: 768px) {
+    .ranking-info {
+        margin: 0 8px;
+    }
+    
+    .ranking-name {
+        font-size: 13px;
+    }
+    
+    .ranking-district {
+        font-size: 11px;
+    }
+    
+    .selected-indicator {
+        font-size: 14px;
+        margin-left: 6px;
+    }
+}
