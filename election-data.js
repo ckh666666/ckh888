@@ -86,6 +86,12 @@ const partyConfig = {
         shortName: "RECALL",
         colors: ["#FFEBEE", "#FFCDD2", "#EF9A9A", "#E57373", "#F44336", "#D32F2F"],
         primary: "#D32F2F"
+    },
+    "winner-ranking": {
+        name: "获胜党票数排行",
+        shortName: "WINNER-RANKING",
+        colors: ["#E3F2FD", "#BBDEFB", "#90CAF9", "#64B5F6", "#42A5F5", "#2196F3"],
+        primary: "#2196F3"
     }
 };
 
@@ -202,6 +208,43 @@ function getRegionColor(regionName, party = currentParty) {
         } else {
             return '#9E9E9E'; // 灰色 - 不参与大罢免的地区
         }
+    }
+    
+    // 如果是获胜党票数排行模式
+    if (party === 'winner-ranking') {
+        const { kmt_votes, dpp_votes, tpp_votes } = data;
+        const votes = [kmt_votes, dpp_votes, tpp_votes];
+        const parties = ['kmt', 'dpp', 'tpp'];
+        const maxIndex = votes.indexOf(Math.max(...votes));
+        const winnerParty = parties[maxIndex];
+        
+        // 根据获胜党派选择颜色系列
+        let colors;
+        switch (winnerParty) {
+            case 'kmt':
+                colors = ['#E3F2FD', '#BBDEFB', '#90CAF9', '#64B5F6', '#42A5F5', '#2196F3'];
+                break;
+            case 'dpp':
+                colors = ['#E8F5E8', '#C8E6C9', '#A5D6A7', '#81C784', '#66BB6A', '#4CAF50'];
+                break;
+            case 'tpp':
+                colors = ['#E0F2F1', '#B2DFDB', '#80CBC4', '#4DB6AC', '#26A69A', '#00897B'];
+                break;
+            default:
+                colors = ['#E3F2FD', '#BBDEFB', '#90CAF9', '#64B5F6', '#42A5F5', '#2196F3'];
+        }
+        
+        // 根据获胜党派的票数确定颜色深度
+        const winnerVotes = votes[maxIndex];
+        const totalVotes = kmt_votes + dpp_votes + tpp_votes;
+        const winnerRate = (winnerVotes / totalVotes) * 100;
+        
+        if (winnerRate >= 55) return colors[5]; // 最深色 55%+
+        if (winnerRate >= 45) return colors[4]; // 深色 45-55%
+        if (winnerRate >= 35) return colors[3]; // 中深色 35-45%
+        if (winnerRate >= 25) return colors[2]; // 中色 25-35%
+        if (winnerRate >= 15) return colors[1]; // 浅色 15-25%
+        return colors[0]; // 最浅色 0-15%
     }
     
     // 如果是获胜党派模式
@@ -360,6 +403,13 @@ function switchParty(party) {
     
     if (partyConfig[party]) {
         console.log('✅ 政党配置存在，开始切换');
+        
+        // 保存之前的党派状态（用于恢复）
+        if (currentParty !== party) {
+            window.previousParty = currentParty;
+            console.log('💾 保存之前的党派状态:', window.previousParty);
+        }
+        
         currentParty = party;
         window.currentParty = party; // 确保全局变量同步更新
         console.log('✅ 已设置 currentParty:', currentParty);
@@ -376,6 +426,15 @@ function switchParty(party) {
         updateLegendColors(party);
         console.log('✅ 已更新图例颜色');
         
+        // 特殊处理：如果切换到winner模式且当前是党派模式，确保图例被隐藏
+        if (party === 'winner' && window.currentWinnerMode === 'party') {
+            console.log('🎯 切换到winner模式且当前是党派模式，确保图例隐藏');
+            const legendContainer = document.querySelector('.map-legend');
+            if (legendContainer) {
+                legendContainer.style.display = 'none';
+            }
+        }
+        
         // 触发地图更新
         if (window.updateMapColors) {
             window.updateMapColors(party);
@@ -384,13 +443,142 @@ function switchParty(party) {
         
         // 触发地区地图更新
         if (window.updateDistrictMapColors) {
+            console.log(`🎯 switchParty: 调用 updateDistrictMapColors(${party})`);
             window.updateDistrictMapColors(party);
             console.log('✅ 已触发地区地图更新');
+        }
+        
+        // 如果是从获胜党票数排行模式切换出来，需要特殊处理
+        if (party !== 'winner-ranking') {
+            console.log('🔄 从获胜党票数排行模式切换出来，恢复地图颜色');
+            
+            // 调用退出获胜党票数排行模式的函数
+            if (window.exitWinnerRankingMode) {
+                window.exitWinnerRankingMode();
+            }
+            
+            // 检查当前是否在地区视图
+            if (window.districtMapState && window.districtMapState.currentView === 'district') {
+                console.log('🎯 当前在地区视图，不重新渲染台湾地图');
+                // 在地区视图时，只更新地区地图颜色，不重新渲染台湾地图
+                if (window.updateDistrictMapColors) {
+                    window.updateDistrictMapColors(party);
+                }
+            } else {
+                // 在全岛视图时，重新渲染台湾地图
+                if (window.renderTaiwanMap) {
+                    window.renderTaiwanMap();
+                    console.log('✅ 台湾地图重新渲染完成');
+                }
+            }
         }
         
         // 智能更新排行榜 - 根据当前视图状态
         console.log('🔄 开始智能更新排行榜');
         updateRankingDisplaySmart();
+        
+        // 大数据免模式下的特殊检查
+        if (party === 'recall') {
+            // 检查当前地区是否参与大罢免
+            let currentRegionName = null;
+            let shouldBlockRecallMode = false;
+            
+            // 如果在地区视图，检查当前地区
+            if (window.districtMapState && window.districtMapState.currentView === 'district') {
+                currentRegionName = window.districtMapState.currentDistrictName;
+            }
+            
+            // 如果在全岛视图，检查是否有高亮的地区
+            if (!currentRegionName) {
+                // 尝试从地图中获取当前高亮的地区
+                const highlightedRegion = d3.select("#taiwan-map").select('.region[style*="stroke-width: 3px"]');
+                if (!highlightedRegion.empty()) {
+                    currentRegionName = highlightedRegion.datum().properties.name;
+                }
+            }
+            
+            if (currentRegionName) {
+                console.log('🎯 切换到大数据免模式，检查当前地区是否参与大罢免:', currentRegionName);
+                
+                const recallRegions = window.recallRegions || [];
+                const isParticipating = recallRegions.some(region => {
+                    // 处理可能的繁简体差异
+                    const normalizedRegion = region.replace(/臺/g, '台').replace(/縣/g, '县');
+                    const normalizedRegionName = currentRegionName.replace(/臺/g, '台').replace(/縣/g, '县');
+                    return normalizedRegion === normalizedRegionName || region === currentRegionName;
+                });
+                
+                if (!isParticipating) {
+                    console.log('❌ 当前地区不参与大罢免:', currentRegionName);
+                    
+                    // 显示不参与大罢免的提示
+                    if (window.showRecallNotParticipatingMessage) {
+                        window.showRecallNotParticipatingMessage(currentRegionName);
+                    }
+                    
+                    // 标记需要阻止切换到大数据免模式
+                    shouldBlockRecallMode = true;
+                } else {
+                    console.log('✅ 当前地区参与大罢免:', currentRegionName);
+                }
+            }
+            
+            // 如果当前地区不参与大罢免，阻止切换到大数据免模式
+            if (shouldBlockRecallMode) {
+                console.log('🚫 阻止切换到大数据免模式，保持当前地图状态');
+                
+                // 恢复党派按钮状态到之前的状态
+                const previousParty = window.previousParty || 'kmt';
+                document.querySelectorAll('.party-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`[data-party="${previousParty}"]`).classList.add('active');
+                
+                // 恢复之前的党派状态
+                currentParty = previousParty;
+                window.currentParty = previousParty;
+                
+                // 恢复之前的图例颜色
+                updateLegendColors(previousParty);
+                
+                // 恢复之前的地图颜色
+                if (window.updateMapColors) {
+                    window.updateMapColors(previousParty);
+                }
+                
+                // 恢复地区地图颜色（如果在地区视图）
+                if (window.updateDistrictMapColors) {
+                    window.updateDistrictMapColors(previousParty);
+                }
+                
+                // 恢复排行榜
+                updateRankingDisplaySmart();
+                
+                // 隐藏返回按钮（如果不是大数据免模式）
+                if (window.districtMapState && window.districtMapState.currentView === 'district') {
+                    if (window.hideBackToRegionButton) {
+                        window.hideBackToRegionButton();
+                    }
+                }
+                
+                console.log('✅ 已恢复到之前的模式:', previousParty);
+                return; // 提前退出，不执行后续的大数据免模式切换
+            }
+            
+            // 如果通过检查，正常显示大数据免模式的返回按钮
+            if (window.districtMapState && window.districtMapState.currentView === 'district') {
+                if (window.showBackToRegionButton) {
+                    window.showBackToRegionButton();
+                }
+            }
+        } else {
+            // 其他模式下隐藏返回按钮
+            if (window.districtMapState && window.districtMapState.currentView === 'district') {
+                if (window.hideBackToRegionButton) {
+                    window.hideBackToRegionButton();
+                }
+            }
+        }
         
         console.log('✅ 切换到:', partyConfig[party].name);
     } else {
@@ -412,6 +600,15 @@ function switchWinnerMode(mode) {
         
         // 更新图例颜色
         updateLegendColors('winner');
+        
+        // 特殊处理：如果切换到党派模式，立即隐藏图例
+        if (mode === 'party') {
+            console.log('🎯 switchWinnerMode: 切换到党派模式，立即隐藏图例');
+            const legendContainer = document.querySelector('.map-legend');
+            if (legendContainer) {
+                legendContainer.style.display = 'none';
+            }
+        }
         
         // 触发地图更新
         if (window.updateMapColors) {
@@ -437,6 +634,13 @@ function updateLegendColors(party) {
     const legendTitle = document.getElementById('legend-title');
     
     if (legendBar && legendContainer) {
+        // 特殊检查：如果当前是winner模式且是党派模式，立即隐藏图例
+        if (party === 'winner' && window.currentWinnerMode === 'party') {
+            console.log('🎯 updateLegendColors: 立即隐藏党派模式图例');
+            legendContainer.style.display = 'none';
+            return;
+        }
+        
         if (party === 'recall') {
             // 大罢免模式：显示多级红色和灰色的图例
             legendContainer.style.display = 'block';
@@ -450,6 +654,11 @@ function updateLegendColors(party) {
             }
         } else if (party === 'winner' && currentWinnerMode === 'party') {
             // 党派模式：完全隐藏图例
+            console.log('🎯 updateLegendColors: 党派模式隐藏图例');
+            legendContainer.style.display = 'none';
+            return;
+        } else if (party === 'winner-ranking') {
+            // 获胜党票数排行模式：隐藏图例
             legendContainer.style.display = 'none';
             return;
         } else {
@@ -777,6 +986,15 @@ function initializeEventListeners() {
             if (winnerModeControls) {
                 if (party === 'winner') {
                     winnerModeControls.style.display = 'block';
+                    
+                    // 特殊处理：如果当前是党派模式，确保图例被隐藏
+                    if (window.currentWinnerMode === 'party') {
+                        console.log('🎯 切换到winner模式且当前是党派模式，确保图例隐藏');
+                        const legendContainer = document.querySelector('.map-legend');
+                        if (legendContainer) {
+                            legendContainer.style.display = 'none';
+                        }
+                    }
                 } else {
                     winnerModeControls.style.display = 'none';
                 }
