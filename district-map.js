@@ -3,6 +3,16 @@
  * 基于taiwan-map.js的架构，实现县市详细地图功能
  */
 
+// 本地getPartyColor函数定义，避免依赖其他文件
+function getPartyColor(party, level = 3) {
+    const colors = {
+        kmt: ['#E6F3FF', '#CCE7FF', '#99D5FF', '#66C2FF', '#3399FF', '#0052CC'],
+        dpp: ['#E6FFE6', '#CCFFCC', '#99FF99', '#66FF66', '#33CC33', '#006600'],
+        tpp: ['#E6FFFF', '#CCFFFF', '#99FFFF', '#66FFFF', '#33CCCC', '#006666']
+    };
+    return colors[party] ? colors[party][level] : '#f8f9fa';
+}
+
 // 全局状态管理
 window.districtMapState = {
     currentView: 'taiwan', // 'taiwan' 或 'district'
@@ -267,26 +277,155 @@ function getAllRecallDataForRegionWithMode(districtName, regionName, currentMode
  * @returns {string} 颜色代码
  */
 function getDistrictColorForMode(regionName, districtName, currentMode = 'district', selectedLegislator = null) {
-    const recallData = getRecallDataForDisplay(districtName, regionName, currentMode, selectedLegislator);
+    const currentParty = window.currentParty || 'kmt';
     
-    if (!recallData) return '#f0f0f0';
-    
-    // 根据当前模式使用不同的比率
-    let rateToUse;
-    let isTurnoutRate = true;
-    
-    if (currentMode === 'legislator' && selectedLegislator) {
-        // 立委模式：使用同意票比率
-        rateToUse = recallData.agree_rate;
-        isTurnoutRate = false;
-        console.log(`🎨 立委模式颜色映射: ${regionName}, 立委: ${selectedLegislator}, 同意率: ${rateToUse}%`);
-    } else {
-        // 地区模式：使用投票率
-        rateToUse = recallData.turnout_rate;
-        console.log(`🎨 地区模式颜色映射: ${regionName}, 投票率: ${rateToUse}%`);
+    // 如果是罢免模式
+    if (currentParty === 'recall') {
+        const recallData = getRecallDataForDisplay(districtName, regionName, currentMode, selectedLegislator);
+        
+        if (!recallData) return '#f0f0f0';
+        
+        // 根据当前模式使用不同的比率
+        let rateToUse;
+        let isTurnoutRate = true;
+        
+        if (currentMode === 'legislator' && selectedLegislator) {
+            // 立委模式：使用同意票比率
+            rateToUse = recallData.agree_rate;
+            isTurnoutRate = false;
+            console.log(`🎨 立委模式颜色映射: ${regionName}, 立委: ${selectedLegislator}, 同意率: ${rateToUse}%`);
+        } else {
+            // 地区模式：使用投票率
+            rateToUse = recallData.turnout_rate;
+            console.log(`🎨 地区模式颜色映射: ${regionName}, 投票率: ${rateToUse}%`);
+        }
+        
+        return getRecallColorByRate(rateToUse, isTurnoutRate);
     }
     
-    return getRecallColorByRate(rateToUse, isTurnoutRate);
+    // 如果是获胜党票数排行模式
+    if (currentParty === 'winner-ranking') {
+        console.log(`🎯 获胜党票数排行模式：计算 ${regionName} 的颜色`);
+        const electionData = getRealElectionData(regionName);
+        
+        console.log(`📊 ${regionName} 选举数据:`, electionData);
+        
+        if (!electionData) {
+            console.log(`❌ ${regionName} 没有选举数据`);
+            return '#f0f0f0';
+        }
+        
+        const { kmt_votes, dpp_votes, tpp_votes, total_votes } = electionData;
+        const votes = [kmt_votes, dpp_votes, tpp_votes];
+        const parties = ['kmt', 'dpp', 'tpp'];
+        const partyNames = ['中国国民党', '民主进步党', '台湾民众党'];
+        const maxIndex = votes.indexOf(Math.max(...votes));
+        const winnerParty = parties[maxIndex];
+        const winnerVotes = votes[maxIndex];
+        
+        // 获胜党颜色配置（与winner-ranking.js保持一致）
+        const winnerRankingConfig = {
+            kmt_colors: ["#E3F2FD", "#BBDEFB", "#90CAF9", "#64B5F6", "#42A5F5", "#2196F3"],
+            dpp_colors: ["#E8F5E8", "#C8E6C9", "#A5D6A7", "#81C784", "#66BB6A", "#4CAF50"],
+            tpp_colors: ["#E0F2F1", "#B2DFDB", "#80CBC4", "#4DB6AC", "#26A69A", "#00897B"]
+        };
+        
+        // 根据党派选择颜色系列
+        let colors;
+        switch (winnerParty) {
+            case 'kmt':
+                colors = winnerRankingConfig.kmt_colors;
+                break;
+            case 'dpp':
+                colors = winnerRankingConfig.dpp_colors;
+                break;
+            case 'tpp':
+                colors = winnerRankingConfig.tpp_colors;
+                break;
+            default:
+                colors = winnerRankingConfig.kmt_colors;
+        }
+        
+        // 计算当前地区所有获胜党票数的范围（用于颜色分档）
+        const currentDistrict = window.districtMapState.currentDistrictName;
+        const geoData = window.currentGeoData;
+        
+        if (geoData) {
+            const allWinnerVotes = geoData.features.map(feature => {
+                const regionData = getRealElectionData(feature.properties.name);
+                if (regionData) {
+                    const { kmt_votes, dpp_votes, tpp_votes } = regionData;
+                    const votes = [kmt_votes, dpp_votes, tpp_votes];
+                    return Math.max(...votes);
+                }
+                return 0;
+            }).filter(votes => votes > 0);
+            
+            if (allWinnerVotes.length > 0) {
+                const minVotes = Math.min(...allWinnerVotes);
+                const maxVotes = Math.max(...allWinnerVotes);
+                const range = maxVotes - minVotes;
+                const levelSize = range / 5;
+                const levels = [
+                    minVotes,
+                    minVotes + levelSize,
+                    minVotes + levelSize * 2,
+                    minVotes + levelSize * 3,
+                    minVotes + levelSize * 4,
+                    maxVotes
+                ];
+                
+                // 确定颜色等级 (0-5)
+                let colorIndex = 0;
+                for (let i = 0; i < levels.length - 1; i++) {
+                    if (winnerVotes >= levels[i] && winnerVotes <= levels[i + 1]) {
+                        colorIndex = i;
+                        break;
+                    }
+                }
+                
+                console.log(`✅ ${regionName} 获胜党: ${winnerParty}, 票数: ${winnerVotes}, 颜色等级: ${colorIndex}, 颜色: ${colors[colorIndex]}`);
+                return colors[colorIndex];
+            }
+        }
+        
+        // 如果无法计算分档，使用默认颜色
+        if (colors && colors.length > 2) {
+            console.log(`⚠️ ${regionName} 使用默认颜色等级: ${colors[2]}`);
+            return colors[2]; // 使用中等深度的颜色
+        } else {
+            // 如果colors未定义，使用默认的蓝色
+            console.log(`⚠️ ${regionName} 使用默认蓝色: #64B5F6`);
+            return '#64B5F6';
+        }
+    }
+    
+    // 普通选举模式
+    const electionData = getRealElectionData(regionName);
+    
+    if (!electionData) return '#f0f0f0';
+    
+    // 使用全局的颜色映射函数
+    if (window.getRegionColor) {
+        return window.getRegionColor(regionName, currentParty);
+    }
+    
+    // 如果没有全局函数，使用默认逻辑
+    const rate = electionData[`${currentParty}_rate`];
+    if (rate == null) {
+        return '#f0f0f0';
+    }
+    
+    // 转换为百分比
+    const percentage = rate <= 1 ? rate * 100 : rate;
+    
+    // 根据得票率分配颜色层级
+    if (percentage >= 55) return '#0052CC'; // 最深色 55%+
+    if (percentage >= 45) return '#3399FF'; // 深色 45-55%
+    if (percentage >= 35) return '#66C2FF'; // 中深色 35-45%
+    if (percentage >= 25) return '#99D5FF'; // 中色 25-35%
+    if (percentage >= 15) return '#CCE7FF'; // 浅色 15-25%
+    return '#E6F3FF'; // 最浅色 0-15%
 }
 
 /**
@@ -347,8 +486,13 @@ window.loadDistrictMap = async function(districtName, districtCode) {
         // 更新排行榜为地区数据
         updateDistrictRanking(districtName, geoData);
         
-        // 隐藏返回地区地图按钮（进入地区地图时）
-        hideBackToRegionButton();
+        // 只在罢免模式下显示返回地区地图按钮
+        const currentParty = window.currentParty || 'kmt';
+        if (currentParty === 'recall') {
+            showBackToRegionButton();
+        } else {
+            hideBackToRegionButton();
+        }
         
 
         
@@ -382,10 +526,31 @@ function renderDistrictMap(geoData, districtName) {
     svg.selectAll('*').remove();
     
     // 为每个行政区添加模拟选举数据
+    const districtData = {};
     geoData.features.forEach(feature => {
         const regionName = feature.properties.name;
-        feature.properties.electionData = getRealElectionData(regionName);
+        const electionData = getRealElectionData(regionName);
+        feature.properties.electionData = electionData;
+        
+        // 收集地区数据用于获胜党票数排行
+        if (electionData) {
+            districtData[regionName] = {
+                kmt_votes: electionData.kmt_votes,
+                dpp_votes: electionData.dpp_votes,
+                tpp_votes: electionData.tpp_votes,
+                total_votes: electionData.total_votes,
+                kmt_rate: electionData.kmt_rate,
+                dpp_rate: electionData.dpp_rate,
+                tpp_rate: electionData.tpp_rate
+            };
+        }
     });
+    
+    // 注册地区数据到获胜党票数排行管理器
+    if (window.districtWinnerRankingManager && Object.keys(districtData).length > 0) {
+        window.districtWinnerRankingManager.registerDistrictData(districtName, districtData);
+        console.log(`✅ 注册地区数据到获胜党票数排行管理器: ${districtName}`);
+    }
     
     // 设置投影 - 适配当前县市
     const projection = d3.geoMercator()
@@ -408,6 +573,17 @@ function renderDistrictMap(geoData, districtName) {
             const regionName = d.properties.name;
             const currentParty = window.currentParty || 'kmt';
             
+            // 如果是获胜党票数排行模式，使用专门的颜色函数
+            if (currentParty === 'winner-ranking') {
+                const currentDistrict = window.districtMapState?.currentDistrictName;
+                const currentMode = window.districtMapState?.currentMode || 'district';
+                const selectedLegislator = window.districtMapState?.selectedLegislator;
+                
+                if (currentDistrict) {
+                    return getDistrictColorForMode(regionName, currentDistrict, currentMode, selectedLegislator);
+                }
+            }
+            
             // 如果是罢免模式，使用罢免颜色函数
             if (currentParty === 'recall') {
                 const currentMode = window.districtMapState?.currentMode || 'district';
@@ -418,8 +594,59 @@ function renderDistrictMap(geoData, districtName) {
                 return getDistrictColor(regionName);
             }
         })
-        .attr("stroke", "#ffffff")
-        .attr("stroke-width", 1.5);
+        .attr("stroke", d => {
+            const regionName = d.properties.name;
+            const currentParty = window.currentParty || 'kmt';
+            
+            // 获取填充颜色
+            let fillColor;
+            if (currentParty === 'winner-ranking') {
+                const currentDistrict = window.districtMapState?.currentDistrictName;
+                const currentMode = window.districtMapState?.currentMode || 'district';
+                const selectedLegislator = window.districtMapState?.selectedLegislator;
+                
+                if (currentDistrict) {
+                    fillColor = getDistrictColorForMode(regionName, currentDistrict, currentMode, selectedLegislator);
+                }
+            } else if (currentParty === 'recall') {
+                const currentMode = window.districtMapState?.currentMode || 'district';
+                const selectedLegislator = window.districtMapState?.selectedLegislator;
+                fillColor = getDistrictColorForMode(regionName, districtName, currentMode, selectedLegislator);
+            } else {
+                fillColor = getDistrictColor(regionName);
+            }
+            
+            // 根据填充颜色设置边界颜色
+            if (fillColor) {
+                // 检查是否为蓝色系（国民党）
+                if (fillColor.includes('#E3F2FD') || fillColor.includes('#BBDEFB') || 
+                    fillColor.includes('#90CAF9') || fillColor.includes('#64B5F6') || 
+                    fillColor.includes('#42A5F5') || fillColor.includes('#2196F3')) {
+                    return '#2196F3'; // 蓝色边界
+                }
+                // 检查是否为绿色系（民进党）
+                else if (fillColor.includes('#E8F5E8') || fillColor.includes('#C8E6C9') || 
+                         fillColor.includes('#A5D6A7') || fillColor.includes('#81C784') || 
+                         fillColor.includes('#66BB6A') || fillColor.includes('#4CAF50')) {
+                    return '#4CAF50'; // 绿色边界
+                }
+                // 检查是否为青绿色系（民众党）
+                else if (fillColor.includes('#E0F2F1') || fillColor.includes('#B2DFDB') || 
+                         fillColor.includes('#80CBC4') || fillColor.includes('#4DB6AC') || 
+                         fillColor.includes('#26A69A') || fillColor.includes('#00897B')) {
+                    return '#00897B'; // 青绿色边界
+                }
+                // 检查是否为红色系（罢免）
+                else if (fillColor.includes('#FFCDD2') || fillColor.includes('#EF9A9A') || 
+                         fillColor.includes('#E57373') || fillColor.includes('#EF5350') || 
+                         fillColor.includes('#F44336') || fillColor.includes('#D32F2F')) {
+                    return '#D32F2F'; // 红色边界
+                }
+            }
+            
+            return '#ffffff'; // 默认白色边界
+        })
+        .attr("stroke-width", 2);
     
     // 添加交互事件 - 复用taiwan-map.js的交互逻辑
     addDistrictInteractions(regions);
@@ -443,12 +670,19 @@ function addDistrictInteractions(selection) {
         .on('mouseover', function(event, d) {
             const regionName = d.properties.name;
             const detail = d.properties.electionData;
+            const currentParty = window.currentParty || 'kmt';
             
             // 高亮当前区域
-            d3.select(this)
-                .style('stroke', '#333')
-                .style('stroke-width', '2px')
-                .style('filter', 'brightness(0.9)');
+            if (currentParty === 'winner-ranking') {
+                // 获胜党票数排行模式下保持边界显示
+                d3.select(this)
+                    .style('filter', 'brightness(0.9)');
+            } else {
+                // 其他模式下隐藏边界以突出显示
+                d3.select(this)
+                    .style('stroke', 'none')
+                    .style('filter', 'brightness(0.9)');
+            }
             
             // 显示右侧详情面板
             showDistrictDetail(regionName, detail);
@@ -503,10 +737,94 @@ function addDistrictInteractions(selection) {
         })
         .on('mouseout', function() {
             // 恢复默认样式
-            d3.select(this)
-                .style('stroke', '#ffffff')
-                .style('stroke-width', '1.5px')
-                .style('filter', 'none');
+            const currentParty = window.currentParty || 'kmt';
+            
+            if (currentParty === 'winner-ranking') {
+                // 获胜党票数排行模式下，恢复边界显示
+                const regionName = d3.select(this).attr('data-region');
+                const currentDistrict = window.districtMapState?.currentDistrictName;
+                const currentMode = window.districtMapState?.currentMode || 'district';
+                const selectedLegislator = window.districtMapState?.selectedLegislator;
+                
+                let strokeColor = '#2196F3'; // 默认蓝色边界
+                
+                if (currentDistrict) {
+                    const fillColor = getDistrictColorForMode(regionName, currentDistrict, currentMode, selectedLegislator);
+                    
+                    // 根据填充颜色设置边界颜色
+                    if (fillColor) {
+                        // 检查是否为蓝色系（国民党）
+                        if (fillColor.includes('#E3F2FD') || fillColor.includes('#BBDEFB') || 
+                            fillColor.includes('#90CAF9') || fillColor.includes('#64B5F6') || 
+                            fillColor.includes('#42A5F5') || fillColor.includes('#2196F3')) {
+                            strokeColor = '#2196F3'; // 蓝色边界
+                        }
+                        // 检查是否为绿色系（民进党）
+                        else if (fillColor.includes('#E8F5E8') || fillColor.includes('#C8E6C9') || 
+                                 fillColor.includes('#A5D6A7') || fillColor.includes('#81C784') || 
+                                 fillColor.includes('#66BB6A') || fillColor.includes('#4CAF50')) {
+                            strokeColor = '#4CAF50'; // 绿色边界
+                        }
+                        // 检查是否为青绿色系（民众党）
+                        else if (fillColor.includes('#E0F2F1') || fillColor.includes('#B2DFDB') || 
+                                 fillColor.includes('#80CBC4') || fillColor.includes('#4DB6AC') || 
+                                 fillColor.includes('#26A69A') || fillColor.includes('#00897B')) {
+                            strokeColor = '#00897B'; // 青绿色边界
+                        }
+                    }
+                }
+                
+                d3.select(this)
+                    .style('stroke', strokeColor)
+                    .style('stroke-width', '2px')
+                    .style('filter', 'none');
+            } else {
+                // 其他模式下，恢复边界显示
+                const regionName = d3.select(this).attr('data-region');
+                let strokeColor = '#ffffff'; // 默认白色边界
+                let fillColor;
+                
+                if (currentParty === 'recall') {
+                    const currentMode = window.districtMapState?.currentMode || 'district';
+                    const selectedLegislator = window.districtMapState?.selectedLegislator;
+                    fillColor = getDistrictColorForMode(regionName, window.districtMapState?.currentDistrictName, currentMode, selectedLegislator);
+                } else {
+                    fillColor = getDistrictColor(regionName);
+                }
+                
+                // 根据填充颜色设置边界颜色
+                if (fillColor) {
+                    // 检查是否为蓝色系（国民党）
+                    if (fillColor.includes('#E3F2FD') || fillColor.includes('#BBDEFB') || 
+                        fillColor.includes('#90CAF9') || fillColor.includes('#64B5F6') || 
+                        fillColor.includes('#42A5F5') || fillColor.includes('#2196F3')) {
+                        strokeColor = '#2196F3'; // 蓝色边界
+                    }
+                    // 检查是否为绿色系（民进党）
+                    else if (fillColor.includes('#E8F5E8') || fillColor.includes('#C8E6C9') || 
+                             fillColor.includes('#A5D6A7') || fillColor.includes('#81C784') || 
+                             fillColor.includes('#66BB6A') || fillColor.includes('#4CAF50')) {
+                        strokeColor = '#4CAF50'; // 绿色边界
+                    }
+                    // 检查是否为青绿色系（民众党）
+                    else if (fillColor.includes('#E0F2F1') || fillColor.includes('#B2DFDB') || 
+                             fillColor.includes('#80CBC4') || fillColor.includes('#4DB6AC') || 
+                             fillColor.includes('#26A69A') || fillColor.includes('#00897B')) {
+                        strokeColor = '#00897B'; // 青绿色边界
+                    }
+                    // 检查是否为红色系（罢免）
+                    else if (fillColor.includes('#FFCDD2') || fillColor.includes('#EF9A9A') || 
+                             fillColor.includes('#E57373') || fillColor.includes('#EF5350') || 
+                             fillColor.includes('#F44336') || fillColor.includes('#D32F2F')) {
+                        strokeColor = '#D32F2F'; // 红色边界
+                    }
+                }
+                
+                d3.select(this)
+                    .style('stroke', strokeColor)
+                    .style('stroke-width', '2px')
+                    .style('filter', 'none');
+            }
             
             // 隐藏工具提示
             tooltip.classed('show', false);
@@ -584,19 +902,54 @@ window.backToTaiwan = async function() {
     try {
         showLoadingState(true);
         
-        // 调用taiwan-map.js的渲染函数
-        if (window.renderTaiwanMap) {
-            await window.renderTaiwanMap();
-            console.log('✅ 台湾地图恢复成功');
-        }
-        
-        // 更新UI状态
-        updateUIState('taiwan');
-        
-        // 更新图例颜色 - 确保在罢免模式下显示正确的图例
         const currentParty = window.currentParty || 'kmt';
-        if (window.updateLegendColors) {
-            window.updateLegendColors(currentParty);
+        
+        // 如果是获胜党票数排行模式，需要特殊处理
+        if (currentParty === 'winner-ranking') {
+            console.log('🎯 当前为获胜党票数排行模式，调用专门的初始化函数');
+            
+            // 调用taiwan-map.js的渲染函数
+            if (window.renderTaiwanMap) {
+                await window.renderTaiwanMap();
+                console.log('✅ 台湾地图恢复成功');
+            }
+            
+            // 立即调用获胜党票数排行的更新函数
+            if (window.updateMapForWinnerRanking) {
+                window.updateMapForWinnerRanking();
+            }
+            if (window.generateWinnerRanking) {
+                window.generateWinnerRanking();
+            }
+            if (window.updateOverallStatsForWinnerRanking) {
+                window.updateOverallStatsForWinnerRanking();
+            }
+            
+            // 隐藏图例（获胜党票数排行模式下不显示图例）
+            const legendContainer = document.querySelector('.map-legend');
+            if (legendContainer) {
+                legendContainer.style.display = 'none';
+            }
+            
+            // 更新UI状态（确保返回按钮被隐藏）
+            updateUIState('taiwan');
+            
+            console.log('✅ 获胜党票数排行模式初始化完成');
+        } else {
+            // 其他模式使用原有的逻辑
+            // 调用taiwan-map.js的渲染函数
+            if (window.renderTaiwanMap) {
+                await window.renderTaiwanMap();
+                console.log('✅ 台湾地图恢复成功');
+            }
+            
+            // 更新UI状态
+            updateUIState('taiwan');
+            
+            // 更新图例颜色 - 确保在罢免模式下显示正确的图例
+            if (window.updateLegendColors) {
+                window.updateLegendColors(currentParty);
+            }
         }
         
         // 恢复全台排行榜
@@ -611,19 +964,22 @@ window.backToTaiwan = async function() {
             console.log('🔍 backToTaiwan - 当前排行榜标题:', rankingTitle.textContent);
         }
         
-        if (window.updateRankingDisplay) {
-            // 延迟调用以确保状态更新完成
-            setTimeout(() => {
-                window.updateRankingDisplay();
-                console.log('✅ backToTaiwan - updateRankingDisplay 调用完成');
-                
-                // 再次检查排行榜标题是否更新
-                if (rankingTitle) {
-                    console.log('🔍 backToTaiwan - 更新后排行榜标题:', rankingTitle.textContent);
-                }
-            }, 100);
-        } else {
-            console.log('❌ backToTaiwan - updateRankingDisplay 函数不存在');
+        // 如果不是获胜党票数排行模式，使用原有的更新逻辑
+        if (currentParty !== 'winner-ranking') {
+            if (window.updateRankingDisplay) {
+                // 延迟调用以确保状态更新完成
+                setTimeout(() => {
+                    window.updateRankingDisplay();
+                    console.log('✅ backToTaiwan - updateRankingDisplay 调用完成');
+                    
+                    // 再次检查排行榜标题是否更新
+                    if (rankingTitle) {
+                        console.log('🔍 backToTaiwan - 更新后排行榜标题:', rankingTitle.textContent);
+                    }
+                }, 100);
+            } else {
+                console.log('❌ backToTaiwan - updateRankingDisplay 函数不存在');
+            }
         }
         
         // 根据当前政党模式控制全台统计面板和得票分析面板的显示
@@ -651,6 +1007,23 @@ window.backToTaiwan = async function() {
         // 隐藏返回地区地图按钮（返回台湾地图时）
         hideBackToRegionButton();
         
+        // 确保返回按钮在所有模式下都被隐藏
+        const backBtn = document.getElementById('back-to-region-btn');
+        if (backBtn) {
+            backBtn.style.display = 'none';
+            console.log('✅ 返回按钮已隐藏');
+        }
+        
+        // 特别处理获胜党票数排行模式
+        if (currentParty === 'winner-ranking') {
+            console.log('🎯 获胜党票数排行模式：确保返回按钮隐藏');
+            // 强制隐藏返回按钮
+            if (backBtn) {
+                backBtn.style.display = 'none';
+                console.log('✅ 获胜党票数排行模式下返回按钮已隐藏');
+            }
+        }
+        
         // 重置状态
         window.districtMapState.currentView = 'taiwan';
         window.districtMapState.currentDistrictName = null;
@@ -670,6 +1043,28 @@ window.backToTaiwan = async function() {
  */
 function getDistrictColor(regionName) {
     const currentParty = window.currentParty || 'kmt';
+    console.log(`🔍 getDistrictColor: ${regionName}, currentParty: ${currentParty}`);
+    
+    // 如果是获胜党票数排行模式
+    if (currentParty === 'winner-ranking') {
+        console.log(`🎯 getDistrictColor: 获胜党票数排行模式 - ${regionName}`);
+        const currentDistrict = window.districtMapState?.currentDistrictName;
+        const currentMode = window.districtMapState?.currentMode || 'district';
+        const selectedLegislator = window.districtMapState?.selectedLegislator;
+        
+        console.log(`📍 当前地区: ${currentDistrict}, 模式: ${currentMode}`);
+        
+        // 使用获胜党票数排行模式的颜色函数
+        if (currentDistrict) {
+            const color = getDistrictColorForMode(regionName, currentDistrict, currentMode, selectedLegislator);
+            console.log(`✅ getDistrictColor: ${regionName} 颜色 = ${color}`);
+            return color;
+        }
+        
+        // 如果没有当前地区信息，返回默认颜色
+        console.log(`⚠️ getDistrictColor: ${regionName} 没有当前地区信息，使用默认颜色`);
+        return '#f8f9fa';
+    }
     
     // 如果是大罢免模式，检查是否有大罢免数据
     if (currentParty === 'recall') {
@@ -767,16 +1162,6 @@ function getDistrictColor(regionName) {
     const colorIndex = getDynamicColorIndex(voteRate, currentParty);
     
     console.log(`🎨 ${regionName} ${partyName}得票率: ${voteRate.toFixed(1)}%, 颜色索引: ${colorIndex}, 颜色: ${colors[colorIndex]}`);
-    
-    return colors[colorIndex];
-    if (currentParty === 'winner' && window.currentWinnerMode === 'party') {
-        console.log(`🔍 党派模式调试 - ${regionName}:`, {
-            winnerParty: electionData.winner.party,
-            winnerName: electionData.winner.name,
-            winnerRate: electionData.winner.rate,
-            selectedColors: colors[colorIndex]
-        });
-    }
     
     return colors[colorIndex];
 }
@@ -1133,6 +1518,11 @@ function getRealElectionData(regionName) {
             kmtRate = parseFloat(realData.kmt_rate) / 100;
             dppRate = parseFloat(realData.dpp_rate) / 100;
             tppRate = parseFloat(realData.tpp_rate) / 100;
+        } else if (typeof realData.kmt_rate === 'function') {
+            // 如果是getter函数（如台北市），调用函数获取值
+            kmtRate = parseFloat(realData.kmt_rate()) / 100;
+            dppRate = parseFloat(realData.dpp_rate()) / 100;
+            tppRate = parseFloat(realData.tpp_rate()) / 100;
         } else {
             // 如果是数值格式（如新北市），直接转换为0-1格式
             kmtRate = realData.kmt_rate / 100;
@@ -1187,6 +1577,8 @@ function getRealDataByRegion(regionName) {
         return null;
     }
     
+    console.log(`🔍 查找 ${regionName} 的真实数据，当前县市: ${currentDistrict}`);
+    
     // 获取对应的数据源
     const districtInfo = window.getDistrictInfo ? window.getDistrictInfo(currentDistrict) : null;
     
@@ -1195,15 +1587,46 @@ function getRealDataByRegion(regionName) {
         return null;
     }
     
+    console.log(`✅ 找到县市配置:`, districtInfo);
+    
     // 尝试从对应的数据源获取数据
     const dataSource = window[districtInfo.dataKey];
     
-    if (dataSource && dataSource[regionName]) {
-        console.log(`✅ 从 ${districtInfo.dataKey} 获取 ${regionName} 的真实数据`);
+    if (!dataSource) {
+        console.warn(`⚠️ 数据源 ${districtInfo.dataKey} 未找到`);
+        return null;
+    }
+    
+    console.log(`✅ 找到数据源 ${districtInfo.dataKey}:`, dataSource);
+    console.log(`🔍 查找区域 ${regionName} 的数据...`);
+    
+    if (dataSource[regionName]) {
+        console.log(`✅ 从 ${districtInfo.dataKey} 获取 ${regionName} 的真实数据:`, dataSource[regionName]);
         return dataSource[regionName];
     }
     
-    console.log(`ℹ️ 未找到 ${regionName} 的真实数据`);
+    // 尝试处理可能的区域名称变体
+    const regionVariants = [
+        regionName,
+        regionName.replace(/區/g, '区'),
+        regionName.replace(/区/g, '區'),
+        regionName.replace(/縣/g, '县'),
+        regionName.replace(/县/g, '縣'),
+        regionName.replace(/市/g, '市'),
+        regionName.replace(/鄉/g, '乡'),
+        regionName.replace(/乡/g, '鄉'),
+        regionName.replace(/鎮/g, '镇'),
+        regionName.replace(/镇/g, '鎮')
+    ];
+    
+    for (const variant of regionVariants) {
+        if (dataSource[variant]) {
+            console.log(`✅ 通过变体名称找到数据: ${variant} -> ${regionName}`);
+            return dataSource[variant];
+        }
+    }
+    
+    console.log(`ℹ️ 未找到 ${regionName} 的真实数据，可用区域:`, Object.keys(dataSource));
     return null;
 }
 
@@ -1465,6 +1888,14 @@ function updateUIState(view, districtName = null) {
         // 更新图例标签为地区专用的分级
         updateDistrictLegendLabels();
         
+        // 只在罢免模式下显示返回按钮
+        const currentParty = window.currentParty || 'kmt';
+        if (currentParty === 'recall') {
+            showBackToRegionButton();
+        } else {
+            hideBackToRegionButton();
+        }
+        
     } else {
         // 隐藏导航栏
         if (navigation) {
@@ -1508,6 +1939,9 @@ function updateUIState(view, districtName = null) {
             selectorControl.style.display = 'none';
         }
         hideLegislatorDetail();
+        
+        // 隐藏返回按钮（在台湾视图时）
+        hideBackToRegionButton();
     }
 }
 
@@ -1537,8 +1971,14 @@ function updateDistrictRanking(districtName, geoData) {
         } else {
             console.log('❌ rankingTitle 元素不存在（地区视图）');
         }
+    } else if (currentParty === 'winner-ranking') {
+        console.log('✅ 当前为获胜党票数排行模式（地区视图）');
+        if (rankingTitle) {
+            rankingTitle.textContent = '🏆 获胜党票数排行';
+            console.log('✅ 设置为获胜党票数排行（地区视图）');
+        }
     } else {
-        console.log('❌ 当前不是罢免模式，currentParty:', currentParty);
+        console.log('❌ 当前不是特殊模式，currentParty:', currentParty);
         if (rankingTitle) {
             rankingTitle.textContent = '🏆 得票率排行';
             console.log('✅ 设置为得票率排行（地区视图）');
@@ -1595,6 +2035,135 @@ function updateDistrictRanking(districtName, geoData) {
                 return;
             }
         }
+    }
+    
+    // 获胜党票数排行模式
+    if (currentParty === 'winner-ranking') {
+        console.log(`🎯 使用获胜党票数排行: ${districtName}`);
+        
+        // 生成获胜党票数排行数据
+        const winnerRanking = geoData.features.map(feature => {
+            const regionName = feature.properties.name;
+            const electionData = getRealElectionData(regionName);
+            
+            // 如果没有数据，跳过这个地区
+            if (!electionData) {
+                console.log(`⚠️ ${regionName} 没有选举数据，跳过排行榜`);
+                return null;
+            }
+            
+            const { kmt_votes, dpp_votes, tpp_votes, total_votes } = electionData;
+            const votes = [kmt_votes, dpp_votes, tpp_votes];
+            const parties = ['kmt', 'dpp', 'tpp'];
+            const partyNames = ['中国国民党', '民主进步党', '台湾民众党'];
+            const maxIndex = votes.indexOf(Math.max(...votes));
+            const winnerParty = parties[maxIndex];
+            const winnerVotes = votes[maxIndex];
+            
+            return {
+                region: regionName,
+                winner: winnerParty,
+                winner_name: partyNames[maxIndex],
+                winner_votes: winnerVotes,
+                winner_rate: (winnerVotes / total_votes * 100).toFixed(2),
+                total_votes: total_votes,
+                // 所有党派得票数据
+                kmt_votes, dpp_votes, tpp_votes,
+                kmt_rate: (kmt_votes / total_votes * 100).toFixed(2),
+                dpp_rate: (dpp_votes / total_votes * 100).toFixed(2),
+                tpp_rate: (tpp_votes / total_votes * 100).toFixed(2)
+            };
+        }).filter(item => item !== null).sort((a, b) => b.winner_votes - a.winner_votes);
+        
+        // 计算颜色分档（使用与winner-ranking.js相同的逻辑）
+        const winnerVotes = winnerRanking.map(item => item.winner_votes);
+        const minVotes = Math.min(...winnerVotes);
+        const maxVotes = Math.max(...winnerVotes);
+        const range = maxVotes - minVotes;
+        const levelSize = range / 5;
+        const levels = [
+            minVotes,
+            minVotes + levelSize,
+            minVotes + levelSize * 2,
+            minVotes + levelSize * 3,
+            minVotes + levelSize * 4,
+            maxVotes
+        ];
+        
+        // 获胜党颜色配置（与winner-ranking.js保持一致）
+        const winnerRankingConfig = {
+            kmt_colors: ["#E3F2FD", "#BBDEFB", "#90CAF9", "#64B5F6", "#42A5F5", "#2196F3"],
+            dpp_colors: ["#E8F5E8", "#C8E6C9", "#A5D6A7", "#81C784", "#66BB6A", "#4CAF50"],
+            tpp_colors: ["#E0F2F1", "#B2DFDB", "#80CBC4", "#4DB6AC", "#26A69A", "#00897B"]
+        };
+        
+        // 根据票数和党派获取颜色
+        function getDistrictWinnerColor(winner, votes) {
+            // 确定颜色等级 (0-5)
+            let colorIndex = 0;
+            for (let i = 0; i < levels.length - 1; i++) {
+                if (votes >= levels[i] && votes <= levels[i + 1]) {
+                    colorIndex = i;
+                    break;
+                }
+            }
+            
+            // 根据党派选择颜色系列
+            let colors;
+            switch (winner) {
+                case 'kmt':
+                    colors = winnerRankingConfig.kmt_colors;
+                    break;
+                case 'dpp':
+                    colors = winnerRankingConfig.dpp_colors;
+                    break;
+                case 'tpp':
+                    colors = winnerRankingConfig.tpp_colors;
+                    break;
+                default:
+                    colors = winnerRankingConfig.kmt_colors;
+            }
+            
+            return colors[colorIndex];
+        }
+        
+        // 渲染获胜党票数排行榜（使用与winner-ranking.js相同的风格）
+        rankingList.innerHTML = winnerRanking.map((item, index) => {
+            // 根据获胜党和得票数设置颜色
+            const bgColor = getDistrictWinnerColor(item.winner, item.winner_votes);
+            const partyColor = getPartyColor(item.winner, 5);
+            
+            return `
+                <div class="ranking-item winner-ranking-item" data-region="${item.region}" 
+                     style="background-color: ${bgColor}; border-left: 4px solid ${partyColor};">
+                    <div class="ranking-number ${index < 3 ? 'top-3' : ''}">${index + 1}</div>
+                    <div class="ranking-info">
+                        <div class="ranking-name">${item.region}</div>
+                        <div class="ranking-district">
+                            <span class="winner-party" style="color: ${partyColor};">${item.winner_name}</span>
+                            <span class="winner-votes">${item.winner_votes.toLocaleString()}票</span>
+                        </div>
+                    </div>
+                    <div class="ranking-percentage">${item.winner_rate}%</div>
+                </div>
+            `;
+        }).join('');
+        
+        // 添加点击事件
+        rankingList.querySelectorAll('.ranking-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const regionName = item.dataset.region;
+                // 在地区地图中高亮对应区域
+                highlightDistrictRegion(regionName);
+                
+                // 显示区域详情
+                const electionData = getRealElectionData(regionName);
+                showDistrictDetail(regionName, electionData);
+            });
+        });
+        
+        console.log(`✅ ${districtName} 获胜党票数排行榜更新完成，共 ${winnerRanking.length} 个区域`);
+        return;
     }
     
     // 普通选举模式：生成地区排行数据
@@ -1660,15 +2229,7 @@ function updateDistrictRanking(districtName, geoData) {
         };
     }).filter(item => item !== null).sort((a, b) => b.rate - a.rate);
     
-    // 获取党派颜色
-    const getPartyColor = window.getPartyColor || function(party, level) {
-        const colors = {
-            kmt: ['#E6F3FF', '#CCE7FF', '#99D5FF', '#66C2FF', '#3399FF', '#0052CC'],
-            dpp: ['#E6FFE6', '#CCFFCC', '#99FF99', '#66FF66', '#33CC33', '#006600'],
-            tpp: ['#E6FFFF', '#CCFFFF', '#99FFFF', '#66FFFF', '#33CCCC', '#006666']
-        };
-        return colors[party] ? colors[party][level] : '#f8f9fa';
-    };
+    // 使用本地定义的getPartyColor函数
     
     // 渲染排行榜
     rankingList.innerHTML = districtRanking.map((item, index) => {
@@ -1766,9 +2327,16 @@ function updateDistrictLegendLabels() {
 
     // 如果是获胜党派模式且是党派模式，隐藏图例
     if (currentParty === 'winner' && currentWinnerMode === 'party') {
+        console.log('🎯 党派模式：隐藏图例');
+        legendContainer.style.display = 'none';
+        return;
+    } else if (currentParty === 'winner-ranking') {
+        // 获胜党票数排行模式：隐藏图例
+        console.log('🎯 获胜党票数排行模式：隐藏图例');
         legendContainer.style.display = 'none';
         return;
     } else {
+        console.log('🎯 显示图例');
         legendContainer.style.display = 'block';
     }
 
@@ -2050,6 +2618,7 @@ window.updateDistrictMapColors = function(party) {
             .transition()
             .duration(500)
             .attr("fill", d => {
+                console.log(`🔄 updateDistrictMapColors: 正在更新 ${d.properties.name} 的颜色`);
                 const color = getDistrictColor(d.properties.name);
                 console.log(`🎨 更新 ${d.properties.name} 颜色为: ${color}`);
                 return color;
@@ -2057,6 +2626,45 @@ window.updateDistrictMapColors = function(party) {
         
         // 更新图例标签
         updateDistrictLegendLabels();
+        
+        // 如果是获胜党票数排行模式，需要特殊处理
+        if (party === 'winner-ranking') {
+            console.log('🎯 获胜党票数排行模式：更新地区内部获胜党排行');
+            
+            // 更新地区内部获胜党排行
+            if (window.districtWinnerRankingManager && window.districtMapState.currentDistrictName) {
+                const districtName = window.districtMapState.currentDistrictName;
+                if (window.generateDistrictWinnerRanking) {
+                    window.generateDistrictWinnerRanking(districtName);
+                }
+                if (window.updateDistrictWinnerStats) {
+                    window.updateDistrictWinnerStats(districtName);
+                }
+            }
+            
+            // 隐藏图例（获胜党票数排行模式下不显示图例）
+            const legendContainer = document.querySelector('.map-legend');
+            if (legendContainer) {
+                legendContainer.style.display = 'none';
+            }
+        } else {
+            // 其他模式：更新地区排行榜
+            if (window.districtMapState && window.districtMapState.currentDistrictName) {
+                const districtName = window.districtMapState.currentDistrictName;
+                const geoData = window.currentGeoData;
+                
+                if (geoData && window.updateDistrictRanking) {
+                    console.log(`🎯 更新地区排行榜: ${districtName} - ${party}模式`);
+                    window.updateDistrictRanking(districtName, geoData);
+                }
+            }
+            
+            // 显示图例（非获胜党票数排行模式）
+            const legendContainer = document.querySelector('.map-legend');
+            if (legendContainer) {
+                legendContainer.style.display = 'block';
+            }
+        }
         
         console.log('✅ 地区地图颜色和图例更新完成');
     } else {
@@ -2278,9 +2886,22 @@ function resetMapDisplay(districtName) {
             const regionName = d.properties.name;
             const currentParty = window.currentParty || 'kmt';
             
+            // 如果是获胜党票数排行模式，使用专门的颜色函数
+            if (currentParty === 'winner-ranking') {
+                const currentDistrict = window.districtMapState?.currentDistrictName;
+                const currentMode = window.districtMapState?.currentMode || 'district';
+                const selectedLegislator = window.districtMapState?.selectedLegislator;
+                
+                if (currentDistrict) {
+                    return getDistrictColorForMode(regionName, currentDistrict, currentMode, selectedLegislator);
+                }
+            }
+            
             // 如果是罢免模式，使用罢免颜色函数
             if (currentParty === 'recall') {
-                return getDistrictColorForMode(regionName, districtName, 'district');
+                const currentMode = window.districtMapState?.currentMode || 'district';
+                const selectedLegislator = window.districtMapState?.selectedLegislator;
+                return getDistrictColorForMode(regionName, districtName, currentMode, selectedLegislator);
             } else {
                 // 非罢免模式，使用正常的选举颜色函数
                 return getDistrictColor(regionName);
@@ -2580,6 +3201,7 @@ window.updateWinnerMode = function(mode) {
             .transition()
             .duration(500)
             .attr("fill", d => {
+                console.log(`🔄 updateDistrictRankingForPartySwitch: 正在更新 ${d.properties.name} 的颜色`);
                 const color = getDistrictColor(d.properties.name);
                 console.log(`🎨 更新 ${d.properties.name} 颜色为: ${color}`);
                 return color;
@@ -2587,6 +3209,15 @@ window.updateWinnerMode = function(mode) {
         
         // 更新图例标签
         updateDistrictLegendLabels();
+        
+        // 特殊处理：如果切换到党派模式，确保图例被隐藏
+        if (mode === 'party') {
+            console.log('🎯 切换到党派模式，确保图例隐藏');
+            const legendContainer = document.querySelector('.map-legend');
+            if (legendContainer) {
+                legendContainer.style.display = 'none';
+            }
+        }
         
         console.log('✅ 地区地图获胜党派模式更新完成');
     } else {
@@ -2646,5 +3277,48 @@ function hideBackToRegionButton() {
         console.log('✅ 隐藏返回地区地图按钮');
     }
 }
+
+// 暴露函数到全局
+window.showBackToRegionButton = showBackToRegionButton;
+window.hideBackToRegionButton = hideBackToRegionButton;
+
+// 为党派切换时的地区排行榜更新函数
+window.updateDistrictRankingForPartySwitch = function() {
+    console.log('🎯 党派切换时的地区排行榜更新');
+    
+    if (window.districtMapState && window.districtMapState.currentView === 'district') {
+        const districtName = window.districtMapState.currentDistrictName;
+        const geoData = window.currentGeoData;
+        const currentParty = window.currentParty || 'kmt';
+        
+        console.log(`🎯 更新地区排行榜: ${districtName} - ${currentParty}模式`);
+        
+        if (geoData && districtName) {
+            // 更新地区排行榜
+            updateDistrictRanking(districtName, geoData);
+            
+            // 如果是获胜党票数排行模式，需要特殊处理
+            if (currentParty === 'winner-ranking') {
+                console.log('🎯 获胜党票数排行模式：更新地区内部获胜党排行');
+                
+                // 更新地区内部获胜党排行
+                if (window.districtWinnerRankingManager) {
+                    if (window.generateDistrictWinnerRanking) {
+                        window.generateDistrictWinnerRanking(districtName);
+                    }
+                    if (window.updateDistrictWinnerStats) {
+                        window.updateDistrictWinnerStats(districtName);
+                    }
+                }
+            }
+            
+            console.log('✅ 地区排行榜更新完成');
+        } else {
+            console.log('❌ 缺少地区数据或地区名称');
+        }
+    } else {
+        console.log('❌ 当前不在地区视图');
+    }
+};
 
 
