@@ -137,8 +137,9 @@ document.addEventListener('DOMContentLoaded', function() {
             .on('mouseover', function(event, d) {
                 const regionName = d.properties.name;
                 const detail = d.properties.electionData;
+                const currentParty = window.currentParty || 'kmt';
 
-                // 高亮当前区域
+                // 高亮当前区域 - 所有模式都保持边界显示
                 d3.select(this)
                     .style('stroke', '#333')
                     .style('stroke-width', '2px')
@@ -210,19 +211,53 @@ document.addEventListener('DOMContentLoaded', function() {
                     .style('top', (event.pageY - 15) + 'px');
             })
             .on('mouseout', function() {
-                // 恢复默认样式
-                d3.select(this)
-                    .style('stroke', '#ffffff')
-                    .style('stroke-width', '0.5px')
-                    .style('filter', 'none');
+                const currentParty = window.currentParty || 'kmt';
+                
+                if (currentParty === 'winner-ranking') {
+                    // 获胜党票数排行模式：重新调用地图更新函数来恢复所有地区的边界颜色
+                    if (window.updateMapForWinnerRanking) {
+                        window.updateMapForWinnerRanking();
+                    }
+                } else {
+                    // 其他模式：恢复默认样式
+                    d3.select(this)
+                        .style('stroke', '#ffffff')
+                        .style('stroke-width', '0.5px')
+                        .style('filter', 'none');
+                }
                 
                 // 隐藏工具提示
                 tooltip.classed('show', false);
             })
             .on('click', function(event, d) {
                 const regionName = d.properties.name;
+                const currentParty = window.currentParty || 'kmt';
                 console.log('🖱️ 点击地区:', regionName);
                 console.log('🔍 地区名称字符详情:', regionName.split('').map(c => c + '(' + c.charCodeAt(0) + ')').join(' '));
+                
+                // 大罢免模式下的特殊处理
+                if (currentParty === 'recall') {
+                    console.log('🎯 大罢免模式：检查地区是否参与大罢免');
+                    
+                    // 检查该地区是否参与大罢免
+                    const recallRegions = window.recallRegions || [];
+                    const isParticipating = recallRegions.some(region => {
+                        // 处理可能的繁简体差异
+                        const normalizedRegion = region.replace(/臺/g, '台').replace(/縣/g, '县');
+                        const normalizedRegionName = regionName.replace(/臺/g, '台').replace(/縣/g, '县');
+                        return normalizedRegion === normalizedRegionName || region === regionName;
+                    });
+                    
+                    if (!isParticipating) {
+                        console.log('❌ 该地区不参与大罢免:', regionName);
+                        
+                        // 显示不参与大罢免的提示
+                        showRecallNotParticipatingMessage(regionName);
+                        return;
+                    }
+                    
+                    console.log('✅ 该地区参与大罢免:', regionName);
+                }
                 
                 // 使用新的通用检测逻辑
                 const districtInfo = window.getDistrictInfo ? window.getDistrictInfo(regionName) : null;
@@ -248,15 +283,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     console.log('🎯 点击不支持详细地图的县市:', regionName);
                     
-                    // 检查是否在配置中但未启用
-                    if (window.districtMapping && window.districtMapping[regionName]) {
-                        console.log('ℹ️ 该县市已配置但未启用详细地图功能');
-                        alert(`${regionName} 的详细地图功能暂未启用，敬请期待！`);
-                    } else {
-                        // 保持原有高亮功能
-                        if (window.highlightRegion) {
-                            window.highlightRegion(regionName);
-                        }
+                    // 保持原有高亮功能
+                    if (window.highlightRegion) {
+                        window.highlightRegion(regionName);
                     }
                 }
             });
@@ -278,6 +307,55 @@ document.addEventListener('DOMContentLoaded', function() {
             .style('fill', '#e53e3e')
             .style('font-size', '16px')
             .text(message);
+    }
+    
+    // --- 显示不参与大罢免提示的辅助函式 ---
+    function showRecallNotParticipatingMessage(regionName) {
+        // 创建或获取提示容器
+        let messageContainer = document.getElementById('recall-not-participating-message');
+        if (!messageContainer) {
+            messageContainer = document.createElement('div');
+            messageContainer.id = 'recall-not-participating-message';
+            messageContainer.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.9);
+                color: white;
+                padding: 20px 30px;
+                border-radius: 10px;
+                font-size: 16px;
+                z-index: 10000;
+                text-align: center;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                max-width: 300px;
+            `;
+            document.body.appendChild(messageContainer);
+        }
+        
+        // 设置提示内容
+        messageContainer.innerHTML = `
+            <div style="margin-bottom: 10px;">
+                <strong>${regionName}</strong>
+            </div>
+            <div style="color: #ffcdd2; font-size: 14px;">
+                该地区不参与大罢免
+            </div>
+            <div style="margin-top: 15px;">
+                <button onclick="this.parentElement.parentElement.remove()" 
+                        style="background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer;">
+                    确定
+                </button>
+            </div>
+        `;
+        
+        // 3秒后自动消失
+        setTimeout(() => {
+            if (messageContainer && messageContainer.parentElement) {
+                messageContainer.remove();
+            }
+        }, 3000);
     }
     
     // --- 定义全局可呼叫的更新函式 ---
@@ -309,6 +387,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- 将renderTaiwanMap暴露到全局供district-map使用 ---
     window.renderTaiwanMap = renderTaiwanMap;
+    
+    // --- 将showRecallNotParticipatingMessage暴露到全局供其他模块使用 ---
+    window.showRecallNotParticipatingMessage = showRecallNotParticipatingMessage;
     
     // --- 启动地圖渲染 ---
     renderTaiwanMap();
