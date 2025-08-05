@@ -18,7 +18,10 @@ const chiayiCountyRealData = {
     '番路鄉': { kmt_votes: 2277, dpp_votes: 2821, tpp_votes: 1524, total_votes: 6622, kmt_rate: 34.38, dpp_rate: 42.60, tpp_rate: 23.01 },
     '大埔鄉': { kmt_votes: 748, dpp_votes: 903, tpp_votes: 457, total_votes: 2108, kmt_rate: 35.48, dpp_rate: 42.84, tpp_rate: 21.68 },
     '阿里山鄉': { kmt_votes: 1550, dpp_votes: 631, tpp_votes: 624, total_votes: 2805, kmt_rate: 55.26, dpp_rate: 22.50, tpp_rate: 22.25 },
-    // 注意：原始数据中缺少六脚乡、东石乡、义竹乡、鹿草乡，因此暂时移除
+    '六腳鄉': { kmt_votes: 3468, dpp_votes: 6972, tpp_votes: 2349, total_votes: 12789, kmt_rate: 27.12, dpp_rate: 54.52, tpp_rate: 18.36 },
+    '東石鄉': { kmt_votes: 4295, dpp_votes: 6529, tpp_votes: 2345, total_votes: 13169, kmt_rate: 32.62, dpp_rate: 49.58, tpp_rate: 17.80 },
+    '義竹鄉': { kmt_votes: 3024, dpp_votes: 5357, tpp_votes: 1823, total_votes: 10204, kmt_rate: 29.63, dpp_rate: 52.49, tpp_rate: 17.88 },
+    '鹿草鄉': { kmt_votes: 2313, dpp_votes: 4626, tpp_votes: 1733, total_votes: 8672, kmt_rate: 26.67, dpp_rate: 53.34, tpp_rate: 19.99 }
 };
 
 // 繁体别名，用于匹配TopoJSON中的繁体地名
@@ -36,6 +39,10 @@ chiayiCountyRealData['梅山鄉'] = chiayiCountyRealData['梅山鄉'];
 chiayiCountyRealData['番路鄉'] = chiayiCountyRealData['番路鄉'];
 chiayiCountyRealData['大埔鄉'] = chiayiCountyRealData['大埔鄉'];
 chiayiCountyRealData['阿里山鄉'] = chiayiCountyRealData['阿里山鄉'];
+chiayiCountyRealData['六腳鄉'] = chiayiCountyRealData['六腳鄉'];
+chiayiCountyRealData['東石鄉'] = chiayiCountyRealData['東石鄉'];
+chiayiCountyRealData['義竹鄉'] = chiayiCountyRealData['義竹鄉'];
+chiayiCountyRealData['鹿草鄉'] = chiayiCountyRealData['鹿草鄉'];
 
 window.chiayiCountyRealData = chiayiCountyRealData;
 console.log('✅ 嘉义县真实选举数据已更新并加载');
