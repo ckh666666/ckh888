@@ -66,6 +66,15 @@ body {
     --recall-color-6: #D32F2F;
     --recall-primary: #D32F2F;
     
+    /* 区域获胜党票数排行 - 紫色系 */
+    --winner-ranking-color-1: #F3E5F5;
+    --winner-ranking-color-2: #E1BEE7;
+    --winner-ranking-color-3: #CE93D8;
+    --winner-ranking-color-4: #BA68C8;
+    --winner-ranking-color-5: #AB47BC;
+    --winner-ranking-color-6: #9C27B0;
+    --winner-ranking-primary: #9C27B0;
+    
     /* 中性色彩 */
     --bg-color: #f8f9fa;
     --border-color: #e9ecef;
@@ -187,12 +196,14 @@ body {
 .tpp-color { background: var(--tpp-primary); }
 .winner-color { background: var(--winner-primary); }
 .recall-color { background: var(--recall-primary); }
+.winner-ranking-color { background: var(--winner-ranking-primary); }
 
 .party-btn[data-party="kmt"] { color: var(--kmt-primary); }
 .party-btn[data-party="dpp"] { color: var(--dpp-primary); }
 .party-btn[data-party="tpp"] { color: var(--tpp-primary); }
 .party-btn[data-party="winner"] { color: var(--winner-primary); }
 .party-btn[data-party="recall"] { color: var(--recall-primary); }
+.party-btn[data-party="winner-ranking"] { color: var(--winner-ranking-primary); }
 
 /* ===== 获胜党派模式切换控制 ===== */
 .winner-mode-controls {
@@ -1610,5 +1621,142 @@ body {
     .selected-indicator {
         font-size: 14px;
         margin-left: 6px;
+    }
+}
+
+/* ===== 获胜党排行样式 ===== */
+.winner-ranking-item {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.winner-ranking-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.winner-party {
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.winner-votes {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.winner-breakdown {
+    margin-top: 20px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.winner-breakdown h4 {
+    margin-bottom: 12px;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.party-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.party-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: white;
+    border-left: 4px solid;
+}
+
+.party-item.kmt {
+    border-left-color: var(--kmt-primary);
+}
+
+.party-item.dpp {
+    border-left-color: var(--dpp-primary);
+}
+
+.party-item.tpp {
+    border-left-color: var(--tpp-primary);
+}
+
+.party-name {
+    font-weight: 500;
+    color: #333;
+}
+
+.party-votes {
+    color: #666;
+    font-size: 0.9em;
+}
+
+/* 获胜党排行图例样式 */
+.legend-section {
+    margin-bottom: 15px;
+}
+
+.legend-section h5 {
+    margin-bottom: 8px;
+    font-size: 0.9em;
+    color: #333;
+    font-weight: 600;
+}
+
+.legend-colors {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.legend-color:hover {
+    transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+    .winner-ranking-item {
+        padding: 10px 12px;
+    }
+    
+    .winner-breakdown {
+        padding: 12px;
+    }
+    
+    .party-breakdown {
+        gap: 6px;
+    }
+    
+    .party-item {
+        padding: 6px 10px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .legend-colors {
+        gap: 2px;
+    }
+    
+    .legend-color {
+        width: 16px;
+        height: 16px;
     }
 }
