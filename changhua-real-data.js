@@ -23,7 +23,13 @@ const changhuaRealData = {
     '北斗鎮': { kmt_votes: 6495, dpp_votes: 7642, tpp_votes: 5543, total_votes: 19680, kmt_rate: 33.00, dpp_rate: 38.83, tpp_rate: 28.17 },
     '二林鎮': { kmt_votes: 10384, dpp_votes: 9912, tpp_votes: 7249, total_votes: 27545, kmt_rate: 37.70, dpp_rate: 35.97, tpp_rate: 26.33 },
     '田尾鄉': { kmt_votes: 5152, dpp_votes: 6230, tpp_votes: 4514, total_votes: 15896, kmt_rate: 32.41, dpp_rate: 39.20, tpp_rate: 28.39 },
-    '埤頭鄉': { kmt_votes: 5508, dpp_votes: 6556, tpp_votes: 4747, total_votes: 16811, kmt_rate: 32.76, dpp_rate: 38.99, tpp_rate: 28.25 }
+    '埤頭鄉': { kmt_votes: 5508, dpp_votes: 6556, tpp_votes: 4747, total_votes: 16811, kmt_rate: 32.76, dpp_rate: 38.99, tpp_rate: 28.25 },
+    '芬園鄉': { kmt_votes: 3468, dpp_votes: 6972, tpp_votes: 2349, total_votes: 12789, kmt_rate: 27.12, dpp_rate: 54.52, tpp_rate: 18.36 },
+    '花壇鄉': { kmt_votes: 9451, dpp_votes: 9555, tpp_votes: 8237, total_votes: 27243, kmt_rate: 34.69, dpp_rate: 35.07, tpp_rate: 30.24 },
+    '芳苑鄉': { kmt_votes: 5649, dpp_votes: 7498, tpp_votes: 4160, total_votes: 17307, kmt_rate: 32.64, dpp_rate: 43.32, tpp_rate: 24.04 },
+    '大城鄉': { kmt_votes: 3064, dpp_votes: 3001, tpp_votes: 1878, total_votes: 7943, kmt_rate: 38.57, dpp_rate: 37.78, tpp_rate: 23.65 },
+    '竹塘鄉': { kmt_votes: 2476, dpp_votes: 3551, tpp_votes: 1965, total_votes: 7992, kmt_rate: 30.98, dpp_rate: 44.46, tpp_rate: 24.56 },
+    '溪州鄉': { kmt_votes: 4929, dpp_votes: 7675, tpp_votes: 4347, total_votes: 16951, kmt_rate: 29.08, dpp_rate: 45.28, tpp_rate: 25.64 }
 };
 
 window.changhuaRealData = changhuaRealData;
