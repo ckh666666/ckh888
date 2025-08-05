@@ -41,7 +41,7 @@ const tainanRealData = {
     '下營區': { kmt_votes: 3349, dpp_votes: 7289, tpp_votes: 2859, total_votes: 13497, kmt_rate: 24.81, dpp_rate: 54.00, tpp_rate: 21.18 },
     '柳營區': { kmt_votes: 2883, dpp_votes: 6654, tpp_votes: 2878, total_votes: 12415, kmt_rate: 23.22, dpp_rate: 53.59, tpp_rate: 23.18 },
     '鹽水區': { kmt_votes: 3229, dpp_votes: 7882, tpp_votes: 3056, total_votes: 14167, kmt_rate: 22.79, dpp_rate: 55.63, tpp_rate: 21.57 },
-    // 注意：原始数据中缺少 大内区，山上区，所以暂时移除
+    '大內區': { kmt_votes: 1336, dpp_votes: 3191, tpp_votes: 1014, total_votes: 5541, kmt_rate: 24.11, dpp_rate: 57.59, tpp_rate: 18.30 }
 };
 
 window.tainanRealData = tainanRealData;
